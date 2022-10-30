@@ -195,6 +195,8 @@ public class Controller {
                                 }
                             }
                             dayArray.add(new Day(temperature, wet, pressure, windSpeed, weather, date));
+
+
                         }
 
                     } catch (MalformedURLException ex) {
