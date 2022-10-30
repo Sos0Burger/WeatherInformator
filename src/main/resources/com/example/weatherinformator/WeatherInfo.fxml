@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.weatherinformator.weatherController">
+   <children>
+      <Button fx:id="rightButton" layoutX="549.0" layoutY="181.0" mnemonicParsing="false" text="&gt;">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+      <Button fx:id="leftbutton" layoutX="14.0" layoutY="181.0" mnemonicParsing="false" text="&lt;">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+      <Button fx:id="recomendationButton" layoutX="392.0" layoutY="361.0" mnemonicParsing="false" text="Получить рекомендацию" />
+      <Label fx:id="recomendationText" layoutX="286.0" layoutY="281.0">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="weatherLabel" layoutX="134.0" layoutY="44.0" text="Погода: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="dateLabel" layoutX="134.0" layoutY="71.0" text="Дата: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="Temperature" layoutX="134.0" layoutY="98.0" text="Температура: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="wetLabel" layoutX="134.0" layoutY="125.0" text="Влажность: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="pressureLabel" layoutX="134.0" layoutY="152.0" text="Давление: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="windSpeedLabel" layoutX="134.0" layoutY="179.0" text="Скорость ветра: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

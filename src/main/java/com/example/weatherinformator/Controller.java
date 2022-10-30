@@ -1,10 +1,14 @@
 package com.example.weatherinformator;
 
+import java.sql.Connection;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -15,11 +19,16 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 public class Controller {
+    public String gay = "sex";
     ArrayList<String> WeatherDays= new ArrayList<>();
     ObservableList<String> sites = FXCollections.observableArrayList("Yandex","Meteoprog");
 
@@ -83,15 +92,15 @@ public class Controller {
                         ArrayList<Day> dayArray = new ArrayList<>();
 
                         for (int i = 0; i < WeatherDays.size(); i++) {
-                            int temperature = 0;
-                            String date = new String();
-                            String pressure = new String();
-                            String wet = new String();
-                            String windSpeed = new String();
-                            String weather = new String();
+                            String temperature = "";
+                            String date = "";
+                            String pressure = "";
+                            String wet = "";
+                            String windSpeed = "";
+                            String weather = "";
                             Matcher matcher = temperatureRegExp.matcher(WeatherDays.get(i));
                             if (matcher.find()) {
-                                temperature = Integer.parseInt(matcher.group().replaceAll("\\+|°",""));
+                                temperature = matcher.group().replaceAll("\\+|°","");
                             }
                             matcher = dateRegExp.matcher(WeatherDays.get(i));
                             if (matcher.find()) {
@@ -103,7 +112,29 @@ public class Controller {
                             }
                             dayArray.add(new Day(temperature, wet, pressure, windSpeed, weather, date));
                         }
+                        try{
+                            String url = "jdbc:mysql://localhost/weather";
+                            String username = "root";
+                            String password = "password";
+                            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+                            try (Connection conn = DriverManager.getConnection(url, username, password)){
+                                System.out.println("Connection to DB succesfull!");
+                                Statement statement = conn.createStatement();
+                                statement.executeUpdate("DELETE FROM meteoprog");
+                                for (Day item: dayArray
+                                ) {
+                                    statement.executeUpdate("INSERT meteoprog(temperature, wet, pressure, windSpeed, date, weather) VALUES ('" +item.temperature +"', '" + item.wet+"', '" +item.pressure +"', '" + item.windSpeed+"', '" +item.date +"', '" +item.weather+"')" );
+                                }
 
+
+                            }
+                        }
+                        catch(Exception ex){
+                            System.out.println("Connection failed...");
+
+                            System.out.println(ex.getMessage());
+                        }
+                        createWindow("meteoprog");
                     } catch (MalformedURLException ex) {
                         System.out.println(ex.getMessage());
                     }
@@ -149,7 +180,7 @@ public class Controller {
                         ArrayList<Day> dayArray = new ArrayList<>();
 
                         for (int i = 0; i < WeatherDays.size(); i++) {
-                            int temperature = 0;
+                            String temperature = "";
                             String date = new String();
                             String pressure = new String();
                             String wet = new String();
@@ -157,7 +188,7 @@ public class Controller {
                             String weather = new String();
                             Matcher matcher = temperatureRegExp.matcher(WeatherDays.get(i));
                             if (matcher.find()) {
-                                temperature = Integer.parseInt(matcher.group().replaceAll("temp__value temp__value_with-unit\">|<", ""));
+                                temperature = matcher.group().replaceAll("temp__value temp__value_with-unit\">|<", "");
                             }
                             matcher = dateRegExp.matcher(WeatherDays.get(i));
                             if (matcher.find()) {
@@ -190,14 +221,41 @@ public class Controller {
                                         weather = "Облачно";
                                         break;
                                     case "ovc_-sn":
+                                    case"ovc_sn":
                                         weather = "Снег";
+                                        break;
+                                    case"skc_d":
+                                        weather = "Солнечно";
                                         break;
                                 }
                             }
                             dayArray.add(new Day(temperature, wet, pressure, windSpeed, weather, date));
 
-
                         }
+
+
+                        try{
+                            String url = "jdbc:mysql://localhost/weather";
+                            String username = "root";
+                            String password = "password";
+                            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+                            try (Connection conn = DriverManager.getConnection(url, username, password)){
+                                System.out.println("Connection to DB succesfull!");
+                                Statement statement = conn.createStatement();
+                                //statement.executeUpdate("DELETE FROM yandex");
+                                for (Day item: dayArray
+                                     ) {
+                                    statement.executeUpdate("INSERT yandex(temperature, wet, pressure, windSpeed, date, weather) VALUES ('" +item.temperature +"', '" + item.wet+"', '" +item.pressure +"', '" + item.windSpeed+"', '" +item.date +"', '" +item.weather+"')" );
+                                }
+
+                            }
+                        }
+                        catch(Exception ex){
+                            System.out.println("Connection failed...");
+
+                            System.out.println(ex.getMessage());
+                        }
+                        createWindow("yandex");
 
                     } catch (MalformedURLException ex) {
                         System.out.println(ex.getMessage());
@@ -207,16 +265,29 @@ public class Controller {
         });
     }
 
+    public void createWindow(String site){
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("WeatherInfo.fxml"));
+            Parent root1 = fxmlLoader.load();
+            Stage stage1 = new Stage();
+            stage1.setScene(new Scene(root1));
+            stage1.setTitle(site);
+            stage1.show();
+            weatherController.site = site;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 class Day{
-    int temperature;
+    String temperature;
     String wet;
     String pressure;
     String windSpeed;
     String date;
     String weather;
 
-    Day(int temperature, String wet, String pressure, String windSpeed, String weather, String date){
+    Day(String temperature, String wet, String pressure, String windSpeed, String weather, String date){
         this.pressure = pressure;
         this.wet = wet;
         this.temperature = temperature;
