@@ -8,7 +8,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class WeatherInformator extends Application {
-    public String site = "gay";
     public Scene scene;
     @Override
     public void start(Stage stage) throws IOException {

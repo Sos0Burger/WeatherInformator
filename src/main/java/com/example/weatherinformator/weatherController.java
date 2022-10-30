@@ -4,14 +4,18 @@ import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
+
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 
 public class weatherController {
-
-    public static String site;
+    ArrayList<Day> weatherDays = new ArrayList<>();
+    int position = 0;
 
     @FXML
     private ResourceBundle resources;
@@ -42,7 +46,6 @@ public class weatherController {
 
     @FXML
     private Button rightButton;
-
     @FXML
     private Label weatherLabel;
 
@@ -52,9 +55,10 @@ public class weatherController {
     @FXML
     private Label windSpeedLabel;
 
+
     @FXML
     void initialize() {
-        int position = 0;
+        String site = Controller.currentSite;
         assert Temperature != null : "fx:id=\"Temperature\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert anchorPane != null : "fx:id=\"anchorPane\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert dateLabel != null : "fx:id=\"dateLabel\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
@@ -62,13 +66,10 @@ public class weatherController {
         assert pressureLabel != null : "fx:id=\"pressureLabel\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert recomendationButton != null : "fx:id=\"recomendationButton\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert recomendationText != null : "fx:id=\"recomendationText\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
-        assert rightButton != null : "fx:id=\"rightButton\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert weatherLabel != null : "fx:id=\"weatherLabel\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert wetLabel != null : "fx:id=\"wetLabel\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
         assert windSpeedLabel != null : "fx:id=\"windxSpeedLabel\" was not injected: check your FXML file 'WeatherInfo.fxml'.";
 
-        ArrayList<Day> weatherDays = new ArrayList<>();
-        String siteName = site;
 
         try{
             String url = "jdbc:mysql://localhost/weather";
@@ -78,10 +79,10 @@ public class weatherController {
 
             try (Connection conn = DriverManager.getConnection(url, username, password)){
                 Statement statement = conn.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT * FROM yandex");
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM "+site);
 
                 while(resultSet.next()){
-                    weatherDays.add(new Day(resultSet.getString("temperature"),resultSet.getString("wet"),resultSet.getString("pressure"),resultSet.getString("windSpeed"),resultSet.getString("date"),resultSet.getString("weather")));
+                    weatherDays.add(new Day(resultSet.getString("temperature"),resultSet.getString("wet"),resultSet.getString("pressure"),resultSet.getString("windSpeed"),resultSet.getString("weather"),resultSet.getString("date")));
                 }
 
             }
@@ -93,33 +94,67 @@ public class weatherController {
             System.out.println("Connection failed...");
             System.out.println(ex.getMessage());
         }
-
+        setInfo();
+        rightButton.setOnAction(actionEvent->{
+            if(position<weatherDays.size()-1){
+                position++;
+                setInfo();
+            }
+        });
+        leftbutton.setOnAction(actionEvent->{
+            if(position!=0){
+                position--;
+                setInfo();
+            }
+        });
+        recomendationButton.setOnAction(actionEvent -> {
+            recomendationText.setVisible(true);
+        });
+    }
+    public void setInfo(){
+        recomendationText.setText("");
+        recomendationText.setVisible(false);
+        pressureLabel.setVisible(false);
+        wetLabel.setVisible(false);
+        dateLabel.setVisible(false);
+        weatherLabel.setVisible(false);
+        windSpeedLabel.setVisible(false);
         if(!weatherDays.get(position).temperature.equals("")){
             Temperature.setVisible(true);
-            Temperature.setText(Temperature.getText()+weatherDays.get(position).temperature);
+            Temperature.setText("Температура: "+weatherDays.get(position).temperature);
         }
         if(!weatherDays.get(position).date.equals("")){
             dateLabel.setVisible(true);
-            dateLabel.setText(dateLabel.getText()+weatherDays.get(position).date);
+            dateLabel.setText("Дата: "+weatherDays.get(position).date);
         }
         if(!weatherDays.get(position).weather.equals("")){
             weatherLabel.setVisible(true);
-            weatherLabel.setText(weatherLabel.getText()+weatherDays.get(position).weather);
+            weatherLabel.setText("Погода: "+weatherDays.get(position).weather);
         }
         if(!weatherDays.get(position).wet.equals("")){
             wetLabel.setVisible(true);
-            wetLabel.setText(wetLabel.getText()+weatherDays.get(position).wet);
+            wetLabel.setText("Влажность: "+weatherDays.get(position).wet);
         }
         if(!weatherDays.get(position).windSpeed.equals("")){
             windSpeedLabel.setVisible(true);
-            windSpeedLabel.setText(windSpeedLabel.getText()+weatherDays.get(position).windSpeed);
+            windSpeedLabel.setText("Скорость ветра: "+weatherDays.get(position).windSpeed);
         }
         if(!weatherDays.get(position).pressure.equals("")){
             pressureLabel.setVisible(true);
-            pressureLabel.setText(pressureLabel.getText()+weatherDays.get(position).pressure);
+            pressureLabel.setText("Давление: "+weatherDays.get(position).pressure);
+        }
+        if(Pattern.matches("дождь|Дождь|осадки", weatherDays.get(position).weather)){
+            recomendationText.setText("Возьмите зонтик,");
+        }
+        else{
+            recomendationText.setText("Зонтик можно не брать,");
+        }
+        if(Pattern.matches("\\+\\d|\\b\\d",weatherDays.get(position).temperature)){
+            recomendationText.setText(recomendationText.getText()+"Оденьтесь полегче");
+        }
+        else {
+            recomendationText.setText(recomendationText.getText()+"Оденьтесь потеплее");
         }
 
-
     }
-
 }
